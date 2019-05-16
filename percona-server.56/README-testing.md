@@ -64,8 +64,8 @@ Set up some containers in replica
         docker exec -u root -it mysql01 pmm-admin config --client-name mysql01 --server pmm-server:80
         docker exec -u root -it mysql02 pmm-admin config --client-name mysql02 --server pmm-server:80
         docker exec -u root -it mysql03 pmm-admin config --client-name mysql03 --server pmm-server:80
-        docker exec -u root -it mysql01 pmm-admin add mysql:metrics --user root --password secret --host mysql01
-        docker exec -u root -it mysql02 pmm-admin add mysql:metrics --user root --password secret --host mysql02 -- -- collect.heartbeat.database=test --collect.heartbeat
-        docker exec -u root -it mysql03 pmm-admin add mysql:metrics --user root --password secret --host mysql03 -- -- collect.heartbeat.database=test --collect.heartbeat
+        docker exec -u root -it mysql01 pmm-admin add mysql:metrics --user root --password secret --host localhost
+        docker exec -u root -it mysql02 pmm-admin add mysql:metrics --user root --password secret --host localhost -- -- collect.heartbeat.database=test --collect.heartbeat
+        docker exec -u root -it mysql03 pmm-admin add mysql:metrics --user root --password secret --host localhost -- -- collect.heartbeat.database=test --collect.heartbeat
 
 And then, by pmm-server interface, add the dashboard [MySQL Replication](https://github.com/percona/grafana-dashboards/blob/master/dashboards/MySQL_Replication.json) with the graph for the heartbeat collection.
