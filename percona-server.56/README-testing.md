@@ -51,14 +51,15 @@ Set up some containers in replica
         docker exec -it mysql01 mysql -u root -psecret -e "USE test; CREATE TABLE one(id int auto_increment, name varchar(25), datetime timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (id))"
         docker exec -it mysql03 mysql -u root -psecret -e "USE test; SHOW TABLES"
 
-        # heartbeat set up
-        docker exec -it mysql01 pt-heartbeat -D test -h mysql01 --user root --password secret --create-table --check --master-server-id 1
-        docker exec -it mysql01 pt-heartbeat --daemonize -D test --user root --password secret --update -h mysql01;
-        docker exec -it mysql02 pt-heartbeat --daemonize -D test --user root --password secret --update -h mysql02;
-        docker exec -it mysql03 pt-heartbeat --daemonize -D test --user root --password secret --update -h mysql03;
-
+        # heartbeat set up masters
+        docker exec -it mysql01 pt-heartbeat -D test -h localhost --user root --password secret --create-table --check --master-server-id 1
+        docker exec -it mysql01 pt-heartbeat --daemonize -D test -h localhost --user root --password secret --update
+        docker exec -it mysql02 pt-heartbeat --daemonize -D test -h localhost --user root --password secret --update
+        
         # test heartbeat
         docker exec -it mysql03 mysql -u root -psecret -e "SELECT * FROM test.heartbeat"
+        docker exec -it mysql02 pt-heartbeat -D test -h localhost --user root --password secret --check --master-server-id 1
+        docker exec -it mysql03 pt-heartbeat -D test -h localhost --user root --password secret --check --master-server-id 2
 
         # register on pmm-server
         docker exec -u root -it mysql01 pmm-admin config --client-name mysql01 --server pmm-server:80
