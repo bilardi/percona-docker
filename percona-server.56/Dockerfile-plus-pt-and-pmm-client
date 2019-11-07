@@ -23,7 +23,7 @@ ENV PERCONA_VERSION 5.6.45-rel86.1.el7
 
 RUN yum install -y \
 		Percona-Server-server-56-${PERCONA_VERSION} \
-		Percona-Server-tokudb-56-${PERCONA_VERSION} \
+		Percona-Server-tokudb-56 \
 		Percona-Server-rocksdb-56-${PERCONA_VERSION} \
 		jemalloc \
 		which \
