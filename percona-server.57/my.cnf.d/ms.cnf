@@ -1,0 +1,19 @@
+[mysqld]
+# Replication
+log-slave-updates
+relay-log=/var/lib/mysql/mysqld-relay-bin
+relay-log-index=/var/lib/mysql/mysqld-relay-bin.index
+relay-log-info-file=/var/lib/mysql/relay-bin.info
+master-info-file=/var/lib/mysql/master.info
+#replicate-ignore-db=mysql.%
+slave-net-timeout=60
+
+# BinaryLogs
+log-bin=/var/lib/mysql/mysql-bin
+log-bin-index=/var/lib/mysql/mysql-bin.index
+max_binlog_size=32M
+binlog_format=row
+binlog_cache_size=8M
+expire_logs_days=3
+#sync_binlog=0 # slave fast
+sync_binlog=1 # master
