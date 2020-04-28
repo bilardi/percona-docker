@@ -78,7 +78,7 @@ RUN chown 1001:1001 /etc/proxysql/proxysql.cnf /etc/proxysql-admin.cnf \
 		    && ./configure --without-pam --without-ssl \
 		    && make \
 		    && make install
-
+RUN rm -rf /var/cache/yum
 		RUN yum -y install iproute pmm-client \
 		    && chown -R 1001:1001 /usr/local/percona \
 		    && rm -rf /var/cache/yum
@@ -95,5 +95,5 @@ VOLUME /var/lib/proxysql
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-EXPOSE 3306 6032 3307 3308 3309 3316 3386 42000 42002 42003 42004 42005 42006 42007 42008
+EXPOSE 3306 6032 6080 3307 3308 3309 3310 3316 3386 42000 42002 42003 42004 42005 42006 42007 42008
 CMD ["/usr/bin/proxysql", "-f", "-c", "/etc/proxysql/proxysql.cnf"]

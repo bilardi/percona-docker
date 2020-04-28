@@ -10,9 +10,9 @@ Build containers of pmm
         docker network create testing
 
         # start pmm-data container
-        docker create --network testing -v /opt/prometheus/data -v /opt/consul-data -v /var/lib/mysql --name pmm-data percona/pmm-server:1.17.1 /bin/true
+        docker create --network testing -v /opt/prometheus/data -v /opt/consul-data -v /var/lib/mysql --name pmm-data percona/pmm-server:1.17.3 /bin/true
         # start pmm-server container
-        docker run --network testing -d -p 80:80 -e METRICS_RESOLUTION=5s -e METRICS_RETENTION=3h -e METRICS_MEMORY=4194302 --volumes-from pmm-data --name pmm-server --restart always percona/pmm-server:1.17.1
+        docker run --network testing -d -p 80:80 -e METRICS_RESOLUTION=5s -e METRICS_RETENTION=3h -e METRICS_MEMORY=4194302 --volumes-from pmm-data --name pmm-server --restart always percona/pmm-server:1.17.3
 
 Set up a single instance
 ========================

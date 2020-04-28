@@ -1,7 +1,7 @@
 Build image
 ===========
 
-        docker build -f Dockerfile-plus-pt-and-pmm-client -t percona-server:testing --no-cache .
+        docker build -f Dockerfile-plus-pmm-client -t proxysql:testing --no-cache .
 
 Build containers of pmm
 =======================
@@ -18,16 +18,16 @@ Set up a single instance
 ========================
 
         # start mysql container
-        docker run -it --network testing --name mysql_test -e MYSQL_ROOT_PASSWORD=secret -d percona-server:testing
+        docker run -it --network testing -p 3306:3306 -p 3307:3307 -p 6032:6032 -p 6080:6080 --name proxysql_test -d proxysql:testing
 
         # test services
-        docker exec -it mysql_test pt-heartbeat --version
-        docker exec -u root -it mysql_test pmm-admin --version
-        docker exec -it mysql_test mysql -u root -psecret -e "SHOW DATABASES"
+        docker exec -it proxysql_test pt-heartbeat --version
+        docker exec -u root -it proxysql_test pmm-admin --version
+        docker exec -it proxysql_test mysql -u admin -padmin -h 127.0.0.1 -P 6032 -e "SHOW DATABASES"
 
         # register on pmm-server
-        docker exec -u root -it mysql_test pmm-admin config --client-name mysql_test --server pmm-server:80
-        docker exec -u root -it mysql_test pmm-admin add mysql:metrics --user root --password secret --host mysql_test
+        docker exec -u root -it proxysql_test pmm-admin config --client-name mysql_test --server pmm-server:80
+        docker exec -u root -it proxysql_test pmm-admin add proxysql:metrics --dsn "stats:stats@tcp(127.0.0.1:6032)/"
 
 Set up some containers in replica
 =================================
@@ -61,12 +61,22 @@ Set up some containers in replica
         docker exec -it mysql02 pt-heartbeat -D test -h localhost --user root --password secret --check --master-server-id 1
         docker exec -it mysql03 pt-heartbeat -D test -h localhost --user root --password secret --check --master-server-id 2
 
-        # register on pmm-server
-        docker exec -u root -it mysql01 pmm-admin config --client-name mysql01 --server pmm-server:80
-        docker exec -u root -it mysql02 pmm-admin config --client-name mysql02 --server pmm-server:80
-        docker exec -u root -it mysql03 pmm-admin config --client-name mysql03 --server pmm-server:80
-        docker exec -u root -it mysql01 pmm-admin add mysql:metrics --user root --password secret --host localhost
-        docker exec -u root -it mysql02 pmm-admin add mysql:metrics --user root --password secret --host localhost -- -collect.heartbeat.database=test -collect.heartbeat
-        docker exec -u root -it mysql03 pmm-admin add mysql:metrics --user root --password secret --host localhost -- -collect.heartbeat.database=test -collect.heartbeat
-
 And then, by pmm-server interface, add the dashboard [MySQL Replication](https://github.com/percona/grafana-dashboards/blob/master/dashboards/MySQL_Replication.json) with the graph for the heartbeat collection.
+
+Add MySQL instances on ProxySQL instance
+========================================
+
+        # enter the container
+        docker exec -u root -it proxysql mysql -uadmin -padmin -h 127.0.0.1 -P 6032
+        # add servers
+        INSERT INTO mysql_servers(hostgroup_id,hostname,port) VALUES (1,'mysql01',3306);
+        INSERT INTO mysql_servers(hostgroup_id,hostname,port) VALUES (2,'mysql02',3306);
+        INSERT INTO mysql_servers(hostgroup_id,hostname,port) VALUES (2,'mysql03',3306);
+        LOAD MYSQL SERVERS TO RUNTIME;
+        SAVE MYSQL SERVERS TO DISK;
+        # add users
+        INSERT INTO mysql_users(username,password) VALUES ('user1','password1');
+        LOAD MYSQL USERS TO RUNTIME;
+        SAVE MYSQL USERS TO DISK;
+
+And then, by pmm-server interface, see the dashboard [ProxySQL Overview](https://github.com/percona/grafana-dashboards/blob/master/dashboards/ProxySQL_Overview.json).
